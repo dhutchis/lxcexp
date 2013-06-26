@@ -1,0 +1,112 @@
+NOTE this file is paritally organized. The bottom has random snippets of code.
+
+To install the daily build of lxc (necessary for lxc-clone):
+   	sudo add-apt-repository ppa:ubuntu-lxc/daily
+	sudo apt-get update
+	sudo apt-get dist-upgrade
+	sudo apt-get install lxc-dev
+
+To create a new linux container:
+   lxc-create -n ve0 -t ubuntu-v0 -S ~/.ssh/id_rsa.pub
+The -S option injects the SSH public key into the created VM
+ubuntu-ve0 refers to the file /usr/lib/lxc/templates/lxc-ubuntu-v0
+  *actually, the latest version changed it to /usr/lib/lxc/templates/
+I copied the default lxc-ubuntu to lxc-ubuntu-v0 and made a couple changes:
+  //* To apply these changes, run:
+  //  sudo cp /usr/lib/lxc/templates/lxc-ubuntu /usr/lib/lxc/templates/lxc-ubuntu-v1
+  //  sudo patch /usr/lib/lxc/templates/lxc-ubuntu-v1 < lxc-ubuntu-template.patch
+  *actually, just copy over the template file:
+     sudo cp lxc-ubuntu-v0 /usr/lib/lxc/templates/
+  -Change mirror (great speedup): 
+  	 http://archive.ubuntu.com/ubuntu -> http://mirrors.kernel.org/ubuntu/
+  -Insert the following lines shortly after:
+         cat >> "$1/etc/apt/apt.conf" <<EOF
+         Acquire::http::proxy "http://wwwproxy.ran.sandia.gov:80/";
+         Acquire::https::proxy "https://wwwproxy.ran.sandia.gov:80/";
+         Acquire::ftp::proxy "ftp://wwwproxy.ran.sandia.gov:80/";
+         Acquire::socks::proxy "socks://wwwproxy.ran.sandia.gov:80/";
+         EOF
+The template file is responsible for installing ubuntu on the given filesystem.  By default this is /var/lib/lxc/ve0/rootfs, a simple directory tree.  So it will create /var/lib/lxc/ve0/rootfs/bin, /var/lib/lxc/ve0/rootfs/etc, ...
+The default options created a filesystem 447MB large after updates.  Using the --trim option might reduce this.
+Run-time configuration is in /var/lib/lxc/ve0/config.
+Run-time file-system mounting is in /var/lib/lxc/ve0/fstab
+
+In short, lxc-create sets up a new Linux filesystem, configuration file and fstab file in /var/lib/lxc/CONTAINER_NAME.
+lxc-start actually runs a linux container
+
+
+To start the Linux container, run
+   sudo lxc-start -d -n ve0 -o ve0.debug -l DEBUG [command]
+-o specifies the name of a log file (if you want). -l is log level
+command specifies a command to run in the VE; default is /sbin/init
+-d starts the VE in the background; to connect to a tty terminal in the lxc run
+   sudo lxc-console -n ve0
+
+To stop, shutdown the VE from within or, in the host, run
+   lxc-shutdown -n ve0
+To see the processes in a VE run
+   lxc-ps --lxc --name ve0
+To see the status of VE ve0
+   sudo lxc-info -n ve0
+
+
+
+To limit a VE to 500M of RAM:
+   lxc-cgroup -n ve0 memory.limit_in_bytes 500000000
+
+## PROOF that the snapshot works 
+root@ccduser9:/var/lib/lxc# lxc-clone -B overlayfs -s -o ve0 -n ve2
+Created container ve2 as snapshot of ve0
+root@ccduser9:/var/lib/lxc# du -hc | tail
+447M	./ve0/rootfs
+447M	./ve0
+447M	.
+447M	total
+root@ccduser9:/var/lib/lxc# du -hc ve2 | tail
+4.0K	ve2/rootfs
+8.0K	ve2/delta0/etc
+12K	ve2/delta0
+28K	ve2
+28K	total
+root@ccduser9:/var/lib/lxc# cat ve2/delta0/etc/hostname
+ve2
+# Changes in /var/lib/lxc/ve2/config:
+# 	  lxc.network.hwaddr = 00:16:3e:5c:20:31  # New MAC address
+#   	  lxc.utsname = ve2                       # New hostname
+#	  lxc.rootfs = overlayfs:/var/lib/lxc/ve0/rootfs:/var/lib/lxc/ve2/delta0  # New filesystem
+
+
+mkdir /exp
+mount -o size=2G -t tmpfs expm /exp
+lxc-clone -B overlayfs -s -o ve0 -n ve3 -P /exp
+
+lxc-start -n ve3 -f /exp/ve3/config
+sudo lxc-info -n ve3                  # RUNNING
+
+lxc-destroy -P /exp -n ve3
+
+
+## Network testing
+initctl status lxc-net
+route -n
+
+
+
+sudo lxc-create -t ubuntu -n ve0 -B lvm --lvname ve0 --vgname tmpfs --fstype tmpfs --fssize 1.5G
+mount -o size=1G -t tmpfs none rootfs_mem/
+root@ccduser9:/var/lib/lxc# du -hc | tail
+sudo lxc-clone -B overlayfs -s -o ve0 -n ve2
+date >> /home/ubuntu/log_onstart
+
+date >> /home/ubuntu/log_ping
+ping -c 40 localhost >> /home/ubuntu/log_ping
+date >> /home/ubuntu/log_ping
+echo >> /home/ubuntu/log_ping
+
+root@ccduser9:/exp# find / -name "lxc-net*"
+/var/log/upstart/lxc-net.log.1.gz
+/usr/share/man/man1/lxc-netstat.1.gz
+/usr/bin/lxc-netstat
+/etc/init.d/lxc-net
+/etc/default/lxc-net
+/etc/init/lxc-net.conf
