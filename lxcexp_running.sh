@@ -8,11 +8,13 @@ else
     range=`seq $1 $2 | sed 's/^/ve/'`
 fi
 
+count=0
 for i in $range
 do
-    lxc-start -d -n $i -f /exp/$i/config
-    sleep 0.05
+    exp=`lxc-info -p -n $i`
+    if [ ! -z "$exp" ]
+    then
+	count=$((count + 1))
+    fi
 done
-
-
-
+echo $count VEs have a PID

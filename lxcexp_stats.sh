@@ -7,7 +7,8 @@ ve_success=`echo $wclines | tr ' ' '\n' | grep 188 | wc -l`   # VEs outputting 1
 ve_somelines=`echo $wclines | tr ' ' '\n' | wc -l`            # VEs outputting at least one line to log_ping
 ve_incomplete=`expr ${ve_somelines} - ${ve_success}`          # VEs outputting < 188 lines to log_ping
 ve_failed=`expr ${ve_total} - ${ve_somelines}`                # VEs failed to create log_ping
-echo "Total VEs        :" ${ve_total}
+echo "Total VE direcs  :" ${ve_total}
 echo "180-ping VEs     :" ${ve_success}
 echo "Incomplete VEs   :" ${ve_incomplete}
-echo "Failed-to-start  :" ${ve_failed}
+echo "No log file VEs  :" ${ve_failed}
+./lxcexp_running.sh
