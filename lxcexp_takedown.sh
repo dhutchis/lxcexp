@@ -1,7 +1,7 @@
 #! /bin/sh
-for i in `seq 1 ${1}`
+for i in `ls /exp`
 do
-    lxc-destroy -f -n ve$i -P /exp
+    lxc-destroy -f -n $i -P /exp
 done
 umount /exp
 rmdir /exp
