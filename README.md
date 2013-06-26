@@ -21,9 +21,11 @@ sudo apt-get install lxc-dev
    ve1, ve2, ..., veN using overlayfs. Will sleep for a period between lxc-start's.
 3. `lxcexp_start.sh`    -- Starts the N VEs in the background. After the VEs bring their lo network interface up,
    they will make a number of pings to localhost, and poweroff.
-4. `lxcexp_info.sh`     -- Gives the current state of all N VEs, including how many pings they performed.
+4. *`lxcexp_info.sh`     -- Gives the current state of all N VEs, including how many pings they performed.
+   Do not use if there are a lot of VEs; it will print several lines to the terminal for each VE.
 5. `lxcexp_takedown.sh` -- Destroy the N VEs in the tmpfs forcefully, unmount the tmpfs file system.
-6. To kill the base VE, run `lxc-destroy -n ve0`
+6. *`lxcexp_stats.sh`     -- Gives a few key summary statistics of all the VEs.  Very useful.
+7. To kill the base VE, run `lxc-destroy -n ve0`
 
 Hardcoded things that might be of interest to change
 
@@ -31,3 +33,11 @@ Hardcoded things that might be of interest to change
 * Change the lxcexp.conf file to change the number of pings before shutdown (180 as of writing).
 
 In the future, provide safety in /exp directory by only usig the directories that begin with 've'.
+
+## Results ##
+Disk Usage of VEs: 138M /exp
+Total VEs        : 1000
+180-ping VEs     : 704
+Incomplete VEs   : 0
+Failed-to-start  : 296
+
