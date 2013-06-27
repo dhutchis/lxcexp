@@ -3,7 +3,7 @@
 
 if [ -z "$1" -o -z "$2" ]
 then
-    range=`ls /exp`
+    range=`echo /exp/ve* | sed 's/\/exp\///g'` 
 else
     range=`seq $1 $2 | sed 's/^/ve/'`
 fi

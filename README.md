@@ -3,7 +3,7 @@ lxcexp
 This is an experiment for running many, many VEs (Virtual Environments) inside Linux containers. Run all as **su**.
 
 ## Prerequisites ##
-Everything here is tested on Ubuntu 12.04.
+Everything here is tested on Ubuntu 12.04, using version *0.9.0.0~staging~20130619-1813-0ubuntu1~ppa1~precise1* of lxc.
 First install the latest version of lxc:
 
 ```Shell
@@ -15,12 +15,12 @@ sudo apt-get install lxc-dev
 
 ## Running ##
 
-1. `lxcexp_createbase.sh` -- Creates the base ubuntu image, modified to use 
-   a separate APT proxy and run a custom init script. Copies in custom loopback-only config file.
-2. `lxcexp_setup.sh N`    -- Create a 2G tmpfs on /exp, copy-on-write clone the base VE into 
-   ve1, ve2, ..., veN using overlayfs. Will sleep for a period between lxc-start's.
+1. `lxcexp_createbase.sh` -- Creates the base ubuntu image as /var/lib/lxc/ve0, modified to use 
+   a separate APT proxy and run a custom init script. Copies in a custom loopback-only config file.
+2. `lxcexp_setup.sh N`    -- Create a 2G tmpfs on /exp, full copies the base image as /exp/vbase,
+   copy-on-write clone vbase to ve1, ve2, ..., veN using overlayfs. Will sleep for a period between lxc-start's.
 3. `lxcexp_start.sh [S] [E]`    -- Starts the N VEs in the background. After the VEs bring their lo network interface up,
-   they will make a number of pings to localhost, and poweroff. Optional: S and E are the start and end # of the VEs
+   they will make a number of pings to localhost, and [disabled] poweroff. Optional: S and E are the start and end # of the VEs
 4. *`lxcexp_info.sh [S] [E]`     -- Gives the current state of all N VEs, including how many pings they performed.
    Do not use if there are a lot of VEs; it will print several lines to the terminal for each VE.
 5. `lxcexp_takedown.sh` -- Destroy the N VEs in the tmpfs forcefully, unmount the tmpfs file system.
