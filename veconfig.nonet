@@ -1,9 +1,5 @@
 lxc.logfile = /var/log/lxc/ve0.log
-lxc.network.type = veth
-lxc.network.name = eth0
-#lxc.network.ipv4 = 10.0.0.1/24
-lxc.network.script.up = /var/lib/lxc/ve0/config.network.sh
-#lxc.network.veth.pair = vethve1
+lxc.network.type = empty
 # lxc.network.hwaddr = 00:16:3e:8a:47:29
 lxc.network.flags = up
 # lxc.network.link = lxcbr0

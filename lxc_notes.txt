@@ -110,3 +110,59 @@ root@ccduser9:/exp# find / -name "lxc-net*"
 /etc/init.d/lxc-net
 /etc/default/lxc-net
 /etc/init/lxc-net.conf
+
+
+
+
+------------------- OpenVSwitch VLAN notes
+http://www.nsnam.org/wiki/index.php/HOWTO_Use_Linux_Containers_to_set_up_virtual_networks
+https://help.ubuntu.com/community/NetworkConnectionBridge
+
+lxc.network.type = veth             # create peer network device
+lxc.network.flags = up
+lxc.network.link = brve             # bridge to attch the peer network device to
+lxc.network.name = eth0             # name of peer network device in container
+lxc.network.ipv4 = 10.0.0.1/24
+lxc.network.veth.pair = vethve1     # name of the peer network device on the host system
+lxc.network.type = veth             
+lxc.network.flags = up
+lxc.network.link = brve             
+lxc.network.name = eth0             
+lxc.network.ipv4 = 10.0.0.1/24
+lxc.network.veth.pair = vethve1
+
+lxc.network.type = veth             # create peer network device
+lxc.network.flags = up
+lxc.network.link = brve             # bridge to attch the peer network device to
+lxc.network.name = eth0             # name of peer network device in container
+lxc.network.ipv4 = 10.0.0.2/24
+lxc.network.veth.pair = vethve2     # name of the peer network device on the host system
+lxc.network.type = veth             
+lxc.network.flags = up
+lxc.network.link = brve             
+lxc.network.name = eth0             
+lxc.network.ipv4 = 10.0.0.2/24
+lxc.network.veth.pair = vethve2
+
+brctl addbr brve
+# launch ve's
+#brctl addif brve vethve1 #done automatically
+#brctl addif brve vethve2
+
+# kill ve's
+brctl delif brve vethve1
+brctl delif brve vethve2
+brctl delbr brve
+
+apt-get install openvswitch-brcompat openvswitch-switch openvswitch-controller openvswitch-datapath-source
+/etc/init.d/openvswitch-switch force-reload-kmod
+http://longgeek.com/2013/04/20/how-to-correctly-install-openvswitch-on-ubuntu/?lang=en
+
+ovs-vsctl add-br brve
+# start VEs
+ovs-vsctl add-port brve vethve1 tag=1
+ovs-vsctl add-port brve vethve2 tag=1
+# stop VEs
+#ovs-vsctl del-port
+
+ovs-brcompatd --pidfile --detach

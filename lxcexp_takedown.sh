@@ -8,4 +8,4 @@ lxc-kill -n vbase
 lxc-destroy -f -n vbase -P /exp
 umount /exp
 rmdir /exp
-
+ovs-vsctl del-br brve
